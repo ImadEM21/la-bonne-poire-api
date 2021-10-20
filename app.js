@@ -9,12 +9,12 @@ const advertRouter = require('./routes/adverts');
 const formRouter = require('./routes/forms');
 const userRouter = require('./routes/users');
 
-const dbPath = 'mongodb://localhost/labonnepoire';
-mongoose.connect(dbPath, {
-  useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false
-})
+mongoose.connect('mongodb://localhost/labonnepoire')
 .then(() => console.log("Connexion à MongoDB réussie"))
-.catch(() => console.log("connexion à MongoDB échouée"));
+.catch(error => {
+  console.log("connexion à MongoDB échouée");
+  console.log('erreur: ', error)
+});
 
 
 app.use(cors());

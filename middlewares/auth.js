@@ -11,7 +11,7 @@ module.exports = (req, res, next) => {
         } else {
             res.locals.role = userRole;
             next()
-        }
+        } 
     } catch (error) {
         console.error(error)
         res.status(401).json({error: error.stack.split('\n')[0]});
