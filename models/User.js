@@ -9,12 +9,11 @@ const userSchema = mongoose.Schema({
     birthDate: {type: Date, required: true},
     phone: {type: Number, required: false},
     address: {type: String, required: false},
-    zipCode: {type: Number, required: false},
+    zipCode: {type: String, required: false},
     city: {type: String, required: false},
     country: {type: String, required: false},
     avatar: {type: String, required: false},
     role: {type: String, required: true, enum: ['user', 'admin']},
-    adverts: [{type: mongoose.Types.ObjectId, ref: "Advert"}],
     messages: [{type: mongoose.Types.ObjectId, ref: "Message"}]
 }, {
     timestamps: true

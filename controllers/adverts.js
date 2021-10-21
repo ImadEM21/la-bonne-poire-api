@@ -12,10 +12,12 @@ exports.getAdverts = (req, res) => {
 
 exports.getAdvert = (req, res) => {
     Advert.findById(req.params.id)
-    .then(advert => {
+    .populate("owner")
+    .exec((error, advert) => {
+        if (error) return res.status(400).json({error: error.stack.split('\n')[0]});
         if (!advert) return res.status(404).json({message: "Aucune annonce trouvée"})
-    })
-    .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+        return res.status(200).json({advert});
+    });
 };
 
 exports.createAdvert = (req, res) => {
@@ -32,13 +34,13 @@ exports.updateAdvert = (req, res) => {
     if (req.file) {
         Advert.findById(req.params.id)
         .then(advert => {
-            const filename = advert.image.split('/images/')[1];
+            const filename = advert.image.split('/images/')[1];  
             fs.unlink(`images/${filename}`, () => {
                 const newAdvert = {
                     ...req.body,
                     image: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
                 };
-                Advert.findByIdAndUpdate(req.params.id, { ...newAdvert, _id: req.params.id })
+                Advert.findByIdAndUpdate(req.params.id, { ...newAdvert, _id: req.params.id }, {new: true})
                 .then(advert => res.status(200).json({advert}))
                 .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}))
             });
@@ -48,7 +50,7 @@ exports.updateAdvert = (req, res) => {
         const newAdvert = {
             ...req.body
         };
-        Advert.findByIdAndUpdate(req.params.id, { ...newAdvert, _id: req.params.id })
+        Advert.findByIdAndUpdate(req.params.id, { ...newAdvert, _id: req.params.id }, {new: true})
         .then(advert => res.status(200).json({advert}))
         .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
     }

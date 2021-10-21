@@ -38,7 +38,7 @@ exports.login = (req, res) => {
         if (!user) return res.status(404).json({message: "Cet utilisateur n'existe pas"})
         bcrypt.compare(req.body.password, user.password)
         .then(valid => {
-            if (!valid) return res.status(401).json({message: "Mot de passe incorrecte"});
+            if (!valid) return res.status(401).json({message: "Mot de passe incorrect"});
             return res.status(200).json({
                 user,
                 userId: user._id,
@@ -93,27 +93,79 @@ exports.getUser = (req, res) => {
 
 exports.updateUser = (req, res) => {
     if (req.file) {
-        User.findById(req.params.id)
-        .then(user => {
-            const filename = user.avatar.split('/images/')[1];
-            fs.unlink(`images/${filename}`, () => {
-                const newUser = {
-                    ...req.body,
-                    avatar: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-                };
-                User.findByIdAndUpdate(req.params.id, { ...newUser, _id: req.params.id })
-                .then(user => res.status(200).json({user}))
+        if (req.body.oldPassword && req.body.password) {
+            User.findById(req.params.id)
+            .then(user => {
+                if (!user) return res.status(404).json({message: "Utilisateur introuvable"});
+                bcrypt.compare(req.body.oldPassword, user.password)
+                .then(valid => {
+                    if (!valid) return res.status(401).json({message: "Mot de passe incorrect"});
+                    bcrypt.hash(req.body.password, 10)
+                    .then(hash => {
+                        const filename = user.avatar.split('/images/')[1];
+                        fs.unlink(`images/${filename}`, () => {
+                            const newUser = {
+                                ...req.body,
+                                avatar: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+                                password: hash
+                            };
+                            User.findByIdAndUpdate(req.params.id, { ...newUser, _id: req.params.id })
+                            .then(user => res.status(200).json({user}))
+                            .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+                        });
+                    })
+                    .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+                })
+                .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}))
+            })
+            .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+        } else {
+            User.findById(req.params.id)
+            .then(user => {
+                const filename = user.avatar.split('/images/')[1];
+                fs.unlink(`images/${filename}`, () => {
+                    const newUser = {
+                        ...req.body,
+                        avatar: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+                    };
+                    User.findByIdAndUpdate(req.params.id, { ...newUser, _id: req.params.id })
+                    .then(user => res.status(200).json({user}))
+                    .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+                })
+            })
+            .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+        }
+    } else {
+        if (req.body.password && req.body.oldPassword) {
+            User.findById(req.params.id)
+            .then(user => {
+                if (!user) return res.status(404).json({message: "Utilisateur introuvable"});
+                bcrypt.compare(req.body.oldPassword, user.password)
+                .then(valid => {
+                    if (!valid) return res.status(401).json({message: "Mot de passe incorrect"});
+                    bcrypt.hash(req.body.password, 10)
+                    .then(hash => {
+                        const newUser = {
+                            ...req.body,
+                            password: hash
+                        };
+                        User.findByIdAndUpdate(req.params.id, { ...newUser, _id: req.params.id })
+                        .then(user => res.status(200).json({user}))
+                        .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+                    })
+                    .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+                })
                 .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
             })
-        })
-        .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
-    } else {
-        const newUser = {
-            ...req.body
-        };
-        User.findByIdAndUpdate(req.params.id, { ...newUser, _id: req.params.id })
-        .then(user => res.status(200).json({user}))
-        .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+            .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+        } else {
+            const newUser = {
+                ...req.body
+            };
+            User.findByIdAndUpdate(req.params.id, { ...newUser, _id: req.params.id })
+            .then(user => res.status(200).json({user}))
+            .catch(error => res.status(400).json({error: error.stack.split('\n')[0]}));
+        }
     }
 };
 
