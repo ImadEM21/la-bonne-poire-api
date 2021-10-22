@@ -1,6 +1,7 @@
 require('dotenv').config();
 const http = require('http');
 const app = require('./app');
+const socketIo = require('socket.io');
 
 const normalizePort = val => {
     const port = parseInt(val, 10);
@@ -37,6 +38,8 @@ const errorHandler = error => {
 };
 
 const server = http.createServer(app);
+
+const io = socketIo(server);
 
 server.on('error', errorHandler);
 server.on('listening', () => {

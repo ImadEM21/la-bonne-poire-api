@@ -7,7 +7,8 @@ const offerSchema = mongoose.Schema({
     offer: {type: Number, required: true},
     message: {type: String, required: false},
     status: {type: String, required: true, enum: ['pending', 'refused', 'accepted']},
-    rating: {type: Number, required: false}
+    sellerRating: {type: Number, required: false},
+    buyerRating: {type: Number, required: false}
 }, {
     timestamps: true
 });
