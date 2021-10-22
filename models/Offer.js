@@ -6,7 +6,8 @@ const offerSchema = mongoose.Schema({
     advert: {type: mongoose.Types.ObjectId, ref: "Advert"},
     offer: {type: Number, required: true},
     message: {type: String, required: false},
-    status: {type: String, required: true, enum: ['pending', 'refused', 'accepted']}
+    status: {type: String, required: true, enum: ['pending', 'refused', 'accepted']},
+    rating: {type: Number, required: false}
 }, {
     timestamps: true
 });
